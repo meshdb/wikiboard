@@ -1,0 +1,19 @@
+{
+  "name": "@wmhilton/login-with-github-client",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "build": "babel src --out-dir build",
+    "release": "npm run build && npm publish --access public --registry=https://registry.npmjs.org/"
+  },
+  "main": "build/LoginWithGithub.js",
+  "keywords": [],
+  "author": "William Hilton <wmhilton@gmail.com>",
+  "license": "Unlicense",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-es2015-modules-umd": "^6.18.0",
+    "babel-preset-es2015": "^6.18.0"
+  }
+}

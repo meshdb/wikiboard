@@ -1,0 +1,19 @@
+{
+  "name": "@wmhilton/login-with-github-vue-project",
+  "version": "0.0.1",
+  "description": "",
+  "keywords": [],
+  "author": "William Hilton <wmhilton@gmail.com>",
+  "license": "Unlicense",
+  "scripts": {
+    "build": "vbuild",
+    "start": "vbuild --dev",
+    "deploy": "npm run build && surge -p dist --domain login-with-github-vue-project.surge.sh"
+  },
+  "devDependencies": {
+    "@wmhilton/login-with-github-vue-component": "0.0.4",
+    "prismjs": "^1.5.1",
+    "vbuild": "^3.1.5",
+    "vue": "^2.0.0"
+  }
+}

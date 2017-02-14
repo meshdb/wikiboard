@@ -1,0 +1,7 @@
+'use strict'
+export { GitCommit } from './GitCommit'
+export { GithubFriends } from './GithubFriends'
+export { GithubKeyManager } from './GithubKeyManager'
+export { GithubRepo } from './GithubRepo'
+export { GitRepo } from './GitRepo'
+export { PGP } from './pgp'
