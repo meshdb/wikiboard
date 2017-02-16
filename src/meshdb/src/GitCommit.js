@@ -48,6 +48,8 @@ function outdent (str) {
   return str.split('\n').map(x => x.replace(/^ /, '')).join('\n')
 }
 
+// TODO: Make all functions have static async signature?
+
 export class GitCommit {
   static fromPayloadSignature ({payload, signature}) {
     let headers = GitCommit.headers(payload)
