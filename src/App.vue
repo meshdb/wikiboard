@@ -29,6 +29,7 @@
       <b>Forum / Repo:</b><br>
       <input type="text" v-model="repoName" placeholder="user/repo"></input>
       <button type="button" @click="clone">Clone</button>
+      <button type="button" @click="wwClone">WebWorker Clone</button>
       <div>
         Available Threads (branches): {{ branches }}
         <br>
@@ -58,6 +59,15 @@ window.GitCommit = GitCommit
 
 import LoginWithGithub from './login-with-github/vue/component.vue'
 import CommentList from './vue-semantic-ui-comments/comment-list.vue'
+
+// const work = require('webworkify')
+// let service = work(require('./meshdb/src/GitWebWorker.js'))
+// service.addEventListener('message', function (e) {
+//   console.log(e.data)
+// })
+// service.addEventListener('error', function (e) {
+//   console.log(e)
+// })
 
 window.repo = null
 
@@ -149,6 +159,10 @@ export default {
           since: 0
         })
       }
+    },
+    async wwClone () {
+      console.log('wwClone =')
+      service.postMessage(['01234', 'clone', [{origin: this.repoName, token: this.authToken}]])
     },
     async getCommitGraph () {
       // for now, just assume all the threads/branches have names
