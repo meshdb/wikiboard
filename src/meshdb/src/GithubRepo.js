@@ -1,34 +1,30 @@
 'use strict'
 // A small abstraction around our Github API requests
+import { GitRepo } from './GitRepo'
+
 export class GithubRepo {
-  constructor ({authToken, origin}) {
-    // A little bit of "sticky" memory for this data for convenience.
-    this.authToken = authToken
-    this.origin = origin
-  }
-  
-  async cloneInto ({repo, branch, since}) {
+  static async clone ({token, origin, branch, since}) {
     let json
     let checkoutBranch
     if (branch) {
       checkoutBranch = branch
     } else {
       console.log('Getting default branch')
-      json = await this.repo()
+      json = await GithubRepo.repo({token, origin})
       checkoutBranch = json.default_branch
     }
     console.log('Receiving branches list')
-    json = await this.branches()
+    json = await GithubRepo.branches({token, origin})
     for (let branch of json) {
-      await repo.putBranch(branch.name, branch.commit.sha)
+      await GitRepo.putBranch({repo: origin, ref: branch.name, sha: branch.commit.sha})
     }
     console.log('Receiving tags list')
-    json = await this.tags()
+    json = await GithubRepo.tags({token, origin})
     for (let tag of json) {
-      await repo.putTag(tag.name, tag.commit.sha)
+      await GitRepo.putTag({repo: origin, ref: tag.name, sha: tag.commit.sha})
     }
     console.log('Cloning default branch')
-    json = await this.commits({commitish: checkoutBranch, since})
+    json = await GithubRepo.commits({token, origin, commitish: checkoutBranch, since})
     for (let commit of json) {
       if (commit.commit.verification.payload) {
         try {
@@ -40,7 +36,7 @@ export class GithubRepo {
             throw new Error('Commit hash does not match the computed SHA1 sum.')
           }
           console.log('GitCommit.fromPayloadSignature(commit) =', comm)
-          await repo.putCommit(comm)
+          await GitRepo.putCommit({repo: origin, commit: comm})
           console.log('Added commit', commit.sha)
         } catch (e) {
           console.log(e.message, commit.sha)
@@ -50,35 +46,35 @@ export class GithubRepo {
     return
   }
 
-  repo () {
-    return window.fetch(`https://api.github.com/repos/${this.origin}`, {
+  static async repo ({token, origin}) {
+    return window.fetch(`https://api.github.com/repos/${origin}`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'Authorization': 'token ' + this.authToken
+        'Authorization': 'token ' + token
       }
     }).then(res => res.json())
   }
 
-  branches () {
-    return window.fetch(`https://api.github.com/repos/${this.origin}/branches`, {
+  static async branches ({token, origin}) {
+    return window.fetch(`https://api.github.com/repos/${origin}/branches`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'Authorization': 'token ' + this.authToken
+        'Authorization': 'token ' + token
       }
     }).then(res => res.json())
   }
 
-  tags () {
-    return window.fetch(`https://api.github.com/repos/${this.origin}/tags`, {
+  static async tags ({token, origin}) {
+    return window.fetch(`https://api.github.com/repos/${origin}/tags`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'Authorization': 'token ' + this.authToken
+        'Authorization': 'token ' + token
       }
     }).then(res => res.json())
   }
 
-  commits ({commitish, since}) {
-    let url = `https://api.github.com/repos/${this.origin}/commits?sha=${commitish}`
+  static async commits ({token, origin, commitish, since}) {
+    let url = `https://api.github.com/repos/${origin}/commits?sha=${commitish}`
     if (since) {
       let date = (new Date(since * 1000)).toISOString()
       url += `&since=${date}`
@@ -86,7 +82,7 @@ export class GithubRepo {
     return window.fetch(url, {
       headers: {
         'Accept': 'application/vnd.github.cryptographer-preview',
-        'Authorization': 'token ' + this.authToken
+        'Authorization': 'token ' + token
       }
     }).then(res => res.json())
   }

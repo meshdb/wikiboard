@@ -133,18 +133,18 @@ export default {
       console.log('json =', json)
     },
     async clone () {
-      let repo = new GitRepo(this.repoName)
-      let remote = new GithubRepo({
-        authToken: this.authToken,
-        origin: this.repoName
+      await GithubRepo.clone({
+        token: this.authToken,
+        origin: this.repoName,
+        since: 0
       })
-      await remote.cloneInto({repo, since: 0})
-      this.branches = await repo.listBranches()
-      this.tags = await repo.listTags()
+      this.branches = await GitRepo.listBranches({repo: this.repoName})
+      this.tags = await GitRepo.listTags({repo: this.repoName})
       // Clone all branches too
       for (let branch of this.branches) {
-        await remote.cloneInto({
-          repo,
+        await GithubRepo.clone({
+          token: this.authToken,
+          origin: this.repoName,
           branch: branch,
           since: 0
         })
@@ -152,8 +152,7 @@ export default {
     },
     async getCommitGraph () {
       // for now, just assume all the threads/branches have names
-      let repo = new GitRepo(this.repoName)
-      this.comments = (await repo.getCommitsSinceTimestamp(0))
+      this.comments = await GitRepo.getCommitsSinceTimestamp({repo: this.repoName, timestamp: 0})
     },
     async dummyComments () {
       let friends = await GithubFriends.fetchFriends({token: this.authToken})

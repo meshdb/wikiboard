@@ -10,32 +10,33 @@ import pad from 'pad'
 const Helpers = require('./level-helpers')
 import { GitCommit } from './GitCommit'
 
-export class GitRepo {
-  constructor (name) {
-    let db = levelup(name, {
-      keyEncoding: 'utf8',
-      valueEncoding: 'utf8'
-    })
-    this.db = db
-    window.db = db
-    this.get = pify((key, cb) => db.get(key, cb))
-    this.put = pify((key, value, cb) => db.put(key, value, cb))
-    this.range = (start, end) => Helpers.range(db, start, end)
-    this.prefix = (prefix) => Helpers.prefix(db, prefix)
+function db (name) {
+  let db = levelup(name, {
+    keyEncoding: 'utf8',
+    valueEncoding: 'utf8'
+  })
+  let wrapper = {
+    get: pify((key, cb) => db.get(key, cb)),
+    put: pify((key, value, cb) => db.put(key, value, cb)),
+    range: (start, end) => Helpers.range(db, start, end),
+    prefix: (prefix) => Helpers.prefix(db, prefix),
   }
+  return wrapper
+}
 
-  async putObject (binaryString) {
+export class GitRepo {
+  static async putObject ({repo, binaryString}) {
     let sha = shasum(binaryString)
-    await this.put(`:objects:${sha}`, binaryString)
+    await db(repo).put(`:objects:${sha}`, binaryString)
     return sha
     // The binary option, should we ever need it.
     // // let uint8array = new TextEncoder('utf8').encode(binaryString)
     // // await this.put(`objects/${sha}`, uint8array, {valueEncoding: 'binary'})
   }
   
-  async getObject (sha) {
+  static async getObject ({repo, sha}) {
     try {
-      let raw = await this.get(`:objects:${sha}`)
+      let raw = await db(repo).get(`:objects:${sha}`)
       // Strip the object type & length
       return raw.replace(/^.+\0/, '')
     } catch (e) {
@@ -44,25 +45,25 @@ export class GitRepo {
     }
   }
   
-  async putCommit (commit) {
+  static async putCommit ({repo, commit}) {
     let headers = GitCommit.parseHeaders(commit)
     try {
-      let sha = await this.putObject(GitCommit.wrapObject(commit))
+      let sha = await GitRepo.putObject({repo, binaryString: GitCommit.wrapObject(commit)})
       let timestamp = pad(10, headers.author.timestamp, '0')
-      await this.put(`:time:${timestamp}:${sha}`, commit)
+      await db(repo).put(`:time:${timestamp}:${sha}`, commit)
       return sha
     } catch (e) {
       throw (e)
     }
   }
     
-  async putBranch (ref, sha) {
-    return await this.put(`:refs:branches:${ref}`, sha)
+  static async putBranch ({repo, ref, sha}) {
+    return await db(repo).put(`:refs:branches:${ref}`, sha)
   }
   
-  async getBranch (ref) {
+  static async getBranch ({repo, ref}) {
     try {
-      return await this.get(`:refs:branches:${ref}`)
+      return await db(repo).get(`:refs:branches:${ref}`)
     } catch (err) {
       if (err.notFound) return null
       throw(err)
@@ -79,33 +80,33 @@ export class GitRepo {
   //   return await this.graph.put({subject: ref, predicate: 'root', object: sha})
   // }
   
-  async putTag (ref, sha) {
-    return await this.put(`:refs:tags:${ref}`, sha)
+  static async putTag ({repo, ref, sha}) {
+    return await db(repo).put(`:refs:tags:${ref}`, sha)
   }
  
-  async getTag (ref) {
+  static async getTag ({repo, ref}) {
     try {
-      return await this.get(`:refs:tags:${ref}`)
+      return await db(repo).get(`:refs:tags:${ref}`)
     } catch (err) {
       if (err.notFound) return null
       throw(err)
     }
   }
 
-  async listBranches () {
-    let results = await this.prefix(`:refs:branches:`)
+  static async listBranches ({repo}) {
+    let results = await db(repo).prefix(`:refs:branches:`)
     let pretty = results.map(x => x.key)
     return pretty
   }
 
-  async listTags () {
-    let results = await this.prefix(`:refs:tags:`)
+  static async listTags ({repo}) {
+    let results = await db(repo).prefix(`:refs:tags:`)
     let pretty = results.map(x => x.key)
     return pretty
   }
 
-  async getCommitsSinceTimestamp (timestamp) {
-    let results = await this.range(`:time:${timestamp}`, `:time:~`)
+  static async getCommitsSinceTimestamp ({repo, timestamp}) {
+    let results = await db(repo).range(`:time:${timestamp}`, `:time:~`)
     let pretty = results.map(x => GitCommit.parse(x.value))
     return pretty
   }
