@@ -2,6 +2,7 @@
 const openpgp = require('openpgp')
 openpgp.config.aead_protect = false
 openpgp.config.prefer_hash_algorithm = 2 // SHA1
+openpgp.config.use_native = false // Do not attempt to load Node's crypto implementation
 var hkp = new openpgp.HKP('https://pgp.mit.edu')
 var hkp2 = new openpgp.HKP('http://keys.gnupg.net')
 var keyring = new openpgp.Keyring()

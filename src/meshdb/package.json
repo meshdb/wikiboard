@@ -47,6 +47,7 @@
     "babel": "inherit"
   },
   "browserify": {
+    "ignore": [ "crypto", "buffer", "node-localstorage", "node-fetch" ],
     "transform": [
       [
         "babelify",

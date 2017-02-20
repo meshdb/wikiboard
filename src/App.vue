@@ -70,7 +70,6 @@ import CommentList from './vue-semantic-ui-comments/comment-list.vue'
 // })
 
 window.repo = null
-
 export default {
   name: 'app',
   components: {
@@ -141,6 +140,12 @@ export default {
       console.log(key)
       let json = await GithubKeyManager.postGpgKey({token, key})
       console.log('json =', json)
+    },
+    async registerSW () {
+      console.log('lets see what havoc this causes')
+      let work = require('webworkify')
+      let w = work(require('./meshdb/src/GitServiceWorker.js'))
+      // await navigator.serviceWorker.register('bundles/GitServiceWorker.js')
     },
     async clone () {
       await GithubRepo.clone({
