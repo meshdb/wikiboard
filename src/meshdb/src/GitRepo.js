@@ -25,6 +25,11 @@ function db (name) {
 }
 
 export class GitRepo {
+  // TODO: validate objects
+  static async put({repo, key, value}) {
+    return db(repo).put(key, value)
+  }
+  
   static async putObject ({repo, binaryString}) {
     let sha = shasum(binaryString)
     await db(repo).put(`:objects:${sha}`, binaryString)
@@ -109,6 +114,16 @@ export class GitRepo {
     let results = await db(repo).range(`:time:${timestamp}`, `:time:~`)
     let pretty = results.map(x => GitCommit.parse(x.value))
     return pretty
+  }
+
+  static async exists ({repo}) {
+    let results = await db(repo).prefix(':')
+    return (results.length > 0)
+  }
+  
+  // TODO: return a Generator instead of an array
+  static async clone ({repo}) {
+    return db(repo).range('','~')
   }
 
   // async listCommitsOnBranch (branch) {

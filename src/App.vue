@@ -28,7 +28,8 @@
     <div>
       <b>Forum / Repo:</b><br>
       <input type="text" v-model="repoName" placeholder="user/repo"></input>
-      <button type="button" @click="clone">Clone</button>
+      <button type="button" @click="cloneGithub">Clone from Github</button>
+      <button type="button" @click="cloneWebRTC">Clone with WebRTC</button>
       <div>
         Available Threads (branches): {{ branches }}
         <br>
@@ -51,10 +52,11 @@
 import 'babel-polyfill'
 import _ from 'lodash'
 
-import { GitRepo, GitCommit, GithubRepo, GithubFriends, GithubKeyManager, PGP } from './meshdb'
+import { GitRepo, GitCommit, GithubRemote, WebRTCRemote, GithubFriends, GithubKeyManager, PGP } from './meshdb'
 window.PGP=PGP
 window.GitRepo = GitRepo
 window.GitCommit = GitCommit
+window.WebRTCRemote = WebRTCRemote
 
 import LoginWithGithub from './login-with-github/vue/component.vue'
 import CommentList from './vue-semantic-ui-comments/comment-list.vue'
@@ -66,6 +68,9 @@ export default {
   components: {
     LoginWithGithub,
     CommentList,
+  },
+  created () {
+    WebRTCRemote.connect()
   },
   data () {
     return {
@@ -132,8 +137,8 @@ export default {
       let json = await GithubKeyManager.postGpgKey({token, key})
       console.log('json =', json)
     },
-    async clone () {
-      await GithubRepo.clone({
+    async cloneGithub () {
+      await GithubRemote.clone({
         token: this.authToken,
         origin: this.repoName,
         since: 0
@@ -142,13 +147,18 @@ export default {
       this.tags = await GitRepo.listTags({repo: this.repoName})
       // Clone all branches too
       for (let branch of this.branches) {
-        await GithubRepo.clone({
+        await GithubRemote.clone({
           token: this.authToken,
           origin: this.repoName,
           branch: branch,
           since: 0
         })
       }
+    },
+    async cloneWebRTC () {
+      await WebRTCRemote.clone({repo: this.repoName})
+      this.branches = await GitRepo.listBranches({repo: this.repoName})
+      this.tags = await GitRepo.listTags({repo: this.repoName})
     },
     async getCommitGraph () {
       // for now, just assume all the threads/branches have names

@@ -2,7 +2,7 @@
 // A small abstraction around our Github API requests
 import { GitRepo } from './GitRepo'
 
-export class GithubRepo {
+export class GithubRemote {
   static async clone ({token, origin, branch, since}) {
     let json
     let checkoutBranch
@@ -10,21 +10,21 @@ export class GithubRepo {
       checkoutBranch = branch
     } else {
       console.log('Getting default branch')
-      json = await GithubRepo.repo({token, origin})
+      json = await GithubRemote.repo({token, origin})
       checkoutBranch = json.default_branch
     }
     console.log('Receiving branches list')
-    json = await GithubRepo.branches({token, origin})
+    json = await GithubRemote.branches({token, origin})
     for (let branch of json) {
       await GitRepo.putBranch({repo: origin, ref: branch.name, sha: branch.commit.sha})
     }
     console.log('Receiving tags list')
-    json = await GithubRepo.tags({token, origin})
+    json = await GithubRemote.tags({token, origin})
     for (let tag of json) {
       await GitRepo.putTag({repo: origin, ref: tag.name, sha: tag.commit.sha})
     }
     console.log('Cloning default branch')
-    json = await GithubRepo.commits({token, origin, commitish: checkoutBranch, since})
+    json = await GithubRemote.commits({token, origin, commitish: checkoutBranch, since})
     for (let commit of json) {
       if (commit.commit.verification.payload) {
         try {
