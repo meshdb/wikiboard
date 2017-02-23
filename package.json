@@ -5,6 +5,7 @@
   "author": "Will Hilton <wmhilton@gmail.com>",
   "private": true,
   "scripts": {
+    "http": "nodemon --exec babel-node http-server/server.js",
     "start": "npm run dev",
     "watchify": "watchify -vd -p browserify-hmr -p [ vueify/plugins/extract-css -o bundles/build.css ] -e src/main.js -o bundles/build.js",
     "serve": "http-server -o",
@@ -24,9 +25,11 @@
   },
   "dependencies": {
     "@wmhilton/login-with-github-vue-component": "0.0.5",
+    "babel-cli": "^6.23.0",
     "babel-polyfill": "^6.22.0",
     "babel-preset-env": "^1.1.8",
     "get-stream": "^3.0.0",
+    "isomorphic-fetch": "^2.2.1",
     "level-browserify": "^1.1.0",
     "level-range": "0.0.0",
     "level-sublevel": "^6.6.1",
@@ -41,6 +44,7 @@
     "shasum": "^1.0.2",
     "signalhub": "^4.8.0",
     "simplemde": "^1.11.2",
+    "upath": "^1.0.0",
     "vue": "^2.0.1",
     "webrtc-swarm": "^2.8.0",
     "wrtc": "0.0.61"
@@ -62,6 +66,7 @@
     "eslint-plugin-promise": "^2.0.1",
     "eslint-plugin-standard": "^2.0.0",
     "http-server": "^0.9.0",
+    "nodemon": "^1.11.0",
     "npm-run-all": "^2.3.0",
     "proxyquireify": "^3.0.1",
     "uglify-js": "^2.5.0",

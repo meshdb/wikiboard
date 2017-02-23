@@ -4,17 +4,15 @@ import shasum from 'shasum'
 // const pgp = require('./pgp')
 // const pako = require('pako')
 import pify from 'pify'
-import levelup from 'level-browserify'
 import pad from 'pad'
 
 const Helpers = require('./level-helpers')
 import { GitCommit } from './GitCommit'
 
+let dbpool = {}
+
 function db (name) {
-  let db = levelup(name, {
-    keyEncoding: 'utf8',
-    valueEncoding: 'utf8'
-  })
+  let db = Helpers.db(name)
   let wrapper = {
     get: pify((key, cb) => db.get(key, cb)),
     put: pify((key, value, cb) => db.put(key, value, cb)),
@@ -97,7 +95,12 @@ export class GitRepo {
       throw(err)
     }
   }
-
+  
+  static async getAllRefs ({repo}) {
+    let results = await db(repo).prefix(`:refs:`)
+    return results
+  }
+  
   static async listBranches ({repo}) {
     let results = await db(repo).prefix(`:refs:branches:`)
     let pretty = results.map(x => x.key)

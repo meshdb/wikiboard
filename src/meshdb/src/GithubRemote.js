@@ -1,6 +1,7 @@
 'use strict'
 // A small abstraction around our Github API requests
 import { GitRepo } from './GitRepo'
+import fetch from 'isomorphic-fetch'
 
 export class GithubRemote {
   static async clone ({token, origin, branch, since}) {
@@ -47,7 +48,7 @@ export class GithubRemote {
   }
 
   static async repo ({token, origin}) {
-    return window.fetch(`https://api.github.com/repos/${origin}`, {
+    return fetch(`https://api.github.com/repos/${origin}`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': 'token ' + token
@@ -56,7 +57,7 @@ export class GithubRemote {
   }
 
   static async branches ({token, origin}) {
-    return window.fetch(`https://api.github.com/repos/${origin}/branches`, {
+    return fetch(`https://api.github.com/repos/${origin}/branches`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': 'token ' + token
@@ -65,7 +66,7 @@ export class GithubRemote {
   }
 
   static async tags ({token, origin}) {
-    return window.fetch(`https://api.github.com/repos/${origin}/tags`, {
+    return fetch(`https://api.github.com/repos/${origin}/tags`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': 'token ' + token
@@ -79,7 +80,7 @@ export class GithubRemote {
       let date = (new Date(since * 1000)).toISOString()
       url += `&since=${date}`
     }
-    return window.fetch(url, {
+    return fetch(url, {
       headers: {
         'Accept': 'application/vnd.github.cryptographer-preview',
         'Authorization': 'token ' + token

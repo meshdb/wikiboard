@@ -5,7 +5,7 @@ openpgp.config.prefer_hash_algorithm = 2 // SHA1
 var hkp = new openpgp.HKP('https://pgp.mit.edu')
 var hkp2 = new openpgp.HKP('http://keys.gnupg.net')
 var keyring = new openpgp.Keyring()
-window.openpgp = openpgp
+
 // Print a key
 function printKey () {
   let keyid = printKeyid(this.primaryKey.getKeyId())
