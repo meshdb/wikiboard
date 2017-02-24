@@ -1,7 +1,19 @@
 'use strict'
 // A small abstraction around our Github API requests
 import { GitRepo } from './GitRepo'
-import fetch from 'isomorphic-fetch'
+import { GitCommit } from './GitCommit'
+import axios from 'axios'
+
+async function request ({url, token, headers}) {
+  let res = await axios.get(url, {
+    headers: {
+      'Accept': 'application/vnd.github.v3+json',
+      'Authorization': 'token ' + token,
+      ...headers
+    }
+  })
+  return res.data
+}
 
 export class GithubRemote {
   static async clone ({token, origin, branch, since}) {
@@ -48,30 +60,15 @@ export class GithubRemote {
   }
 
   static async repo ({token, origin}) {
-    return fetch(`https://api.github.com/repos/${origin}`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': 'token ' + token
-      }
-    }).then(res => res.json())
+    return request({token, url: `https://api.github.com/repos/${origin}`})
   }
 
   static async branches ({token, origin}) {
-    return fetch(`https://api.github.com/repos/${origin}/branches`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': 'token ' + token
-      }
-    }).then(res => res.json())
+    return request({token, url: `https://api.github.com/repos/${origin}/branches`})
   }
 
   static async tags ({token, origin}) {
-    return fetch(`https://api.github.com/repos/${origin}/tags`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': 'token ' + token
-      }
-    }).then(res => res.json())
+    return request({token, url: `https://api.github.com/repos/${origin}/tags`})
   }
 
   static async commits ({token, origin, commitish, since}) {
@@ -80,11 +77,9 @@ export class GithubRemote {
       let date = (new Date(since * 1000)).toISOString()
       url += `&since=${date}`
     }
-    return fetch(url, {
-      headers: {
-        'Accept': 'application/vnd.github.cryptographer-preview',
-        'Authorization': 'token ' + token
-      }
-    }).then(res => res.json())
+    let headers = {
+      'Accept': 'application/vnd.github.cryptographer-preview'
+    }
+    return request({token, url, headers})
   }
 }
