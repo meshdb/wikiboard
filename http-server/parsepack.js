@@ -2,6 +2,7 @@
 const fs = require('fs')
 const Inflate = require('pako').Inflate
 const buffer = fs.readFileSync(process.argv[2])
+const crypto = require('crypto')
 let idx = 0
 
 const echo = process.stdout.write.bind(process.stdout)
@@ -118,7 +119,13 @@ for (var i = 0; i < objects; i++) {
   }
   let a = idx
   let blob = readZlibBlob()
-  console.log('  decompressed length:', blob.length)
-  console.log('  compressed length:', idx - a)
-  console.log(Buffer.from(blob).toString('utf8'))
+  echo(`  decompressed length: ${blob.length}`)
+  echo(`  compressed length: ${idx - a}`)
+  echo(Buffer.from(blob).toString('utf8'))
 }
+echo('Checksum:\n')
+let hash = crypto.createHash('sha1')
+hash.update(buffer.slice(0, idx))
+let digest = hash.digest('hex')
+echo(`  20 bytes (SHA-1): ${read(20, 'hex')}\n`)
+echo(`  computed SHA-1: ${digest}\n`)

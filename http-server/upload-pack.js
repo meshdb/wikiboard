@@ -2,8 +2,9 @@
 const pako = require('pako')
 const { GitRepo, GitCommit } = require('../src/meshdb')
 const pad = require('pad')
+const crypto = require('crypto')
 
-function writeObject ({stream, object}) {
+function writeObject ({write, object}) {
   let type, lastFour, multibyte, length
   // Extract object type and length
   let [stype, slength] = object.split(' ', 2)
@@ -24,7 +25,7 @@ function writeObject ({stream, object}) {
   length = length >>> 4
   // The first byte is then (1-bit multibyte?), (3-bit type), (4-bit least sig 4-bits of length)
   let byte = (multibyte | type | lastFour).toString(16)
-  stream.write(byte, 'hex')
+  write(byte, 'hex')
   // Now we keep chopping away at length 7-bits at a time until its zero.
   let bytes = []
   while (multibyte > 0) {
@@ -34,10 +35,10 @@ function writeObject ({stream, object}) {
   }
   // Then we need to add the bytes in big-endian order.
   while (bytes.length > 0) {
-    stream.write(bytes.shift().toString(16), 'hex')
+    write(bytes.shift().toString(16), 'hex')
   }
   // Lastly, we can compress and write the object.
-  stream.write(Buffer.from(pako.deflate(object)))
+  write(Buffer.from(pako.deflate(object)))
 }
 
 class UploadPack {
@@ -52,15 +53,26 @@ class UploadPack {
         }
       }
     }
-    // write to a buffer, then dump to stream
-    stream.write('PACK')
-    stream.write('00000002', 'hex')
+    // Set up the hash
+    let hash = crypto.createHash('sha1')
+    // write to stream and hasher
+    let write = function (chunk, enc) {
+      stream.write(chunk, enc)
+      hash.update(chunk, enc)
+    }
+    write('PACK')
+    write('00000002', 'hex')
     // Write a 4 byte (32-bit) int
-    stream.write(pad(8, objects.size.toString(16), '0'), 'hex')
+    write(pad(8, objects.size.toString(16), '0'), 'hex')
     for (let o of objects) {
       console.log(o.key)
-      writeObject({stream, object: o.value})
+      writeObject({write, object: o.value})
     }
+    // Write SHA1 checksum
+    let digest = hash.digest()
+    console.log('hash.digest() =', digest)
+    stream.write(digest)
+    return
   }
 }
 
