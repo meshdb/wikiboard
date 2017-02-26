@@ -10,6 +10,18 @@ class App {
     // Create routr
     let routes = new Routr([
       {
+        name: 'push',
+        path: '/:user/:repo/info/refs?service=git-receive-pack',
+      }, {
+        name: 'pull',
+        path: '/:user/:repo/info/refs?service=git-upload-pack',
+      }, {
+        name: 'push(initiator)',
+        path: '/:user/:repo/info/refs?service=git-send-pack',
+      }, {
+        name: 'pull(initiator)',
+        path: '/:user/:repo/info/refs?service=git-fetch-pack',
+      }, {
         name: 'inforefs',
         path: '/:user/:repo/info/refs',
       }, {

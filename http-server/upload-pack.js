@@ -26,16 +26,14 @@ function writeObject ({write, object}) {
   // The first byte is then (1-bit multibyte?), (3-bit type), (4-bit least sig 4-bits of length)
   let byte = (multibyte | type | lastFour).toString(16)
   write(byte, 'hex')
-  // Now we keep chopping away at length 7-bits at a time until its zero.
+  // Now we keep chopping away at length 7-bits at a time until its zero,
+  // writing out the bytes in what amounts to little-endian order.
   let bytes = []
-  while (multibyte > 0) {
+  while (multibyte) {
     multibyte = (length > 0b01111111) ? 0b10000000 : 0b0
-    bytes.push(multibyte | length & 0b01111111)
+    byte = multibyte | length & 0b01111111
+    write(byte.toString(16), 'hex')
     length = length >>> 7
-  }
-  // Then we need to add the bytes in big-endian order.
-  while (bytes.length > 0) {
-    write(bytes.shift().toString(16), 'hex')
   }
   // Lastly, we can compress and write the object.
   write(Buffer.from(pako.deflate(object)))
