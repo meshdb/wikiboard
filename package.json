@@ -8,7 +8,7 @@
     "http": "nodemon --exec babel-node http-server/server.js",
     "start": "npm run dev",
     "watchify": "watchify -vd -p browserify-hmr -p [ vueify/plugins/extract-css -o bundles/build.css ] -e src/main.js -o bundles/build.js",
-    "serve": "http-server -o",
+    "serve": "serve -s",
     "dev": "npm-run-all --parallel watchify serve",
     "lint": "eslint --ext .js,.vue src",
     "build": "cross-env NODE_ENV=production browserify -g envify -p [ vueify/plugins/extract-css -o bundles/build.css ] -e src/main.js > bundles/build.js"
@@ -43,6 +43,7 @@
     "routr": "^2.1.0",
     "s-ago": "^1.1.0",
     "semantic-ui-css": "^2.2.4",
+    "serve": "^4.0.1",
     "shasum": "^1.0.2",
     "signalhub": "^4.8.0",
     "simplemde": "^1.11.2",

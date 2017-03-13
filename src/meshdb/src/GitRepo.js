@@ -72,16 +72,6 @@ export class GitRepo {
       throw(err)
     }
   }
-
-  
-  // async getRoot (ref) {
-  //   let {object} = await this.graph.getP({subject: ref, predicate: 'root'})
-  //   return object
-  // }
-  //
-  // async putRoot (ref, sha) {
-  //   return await this.graph.put({subject: ref, predicate: 'root', object: sha})
-  // }
   
   static async putTag ({repo, ref, sha}) {
     return await db(repo).put(`:refs:tags:${ref}`, sha)

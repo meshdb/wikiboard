@@ -28,8 +28,9 @@
     <div>
       <b>Forum / Repo:</b><br>
       <input type="text" v-model="repoName" placeholder="user/repo"></input>
-      <button type="button" @click="cloneGithub">Clone from Github</button>
-      <button type="button" @click="cloneWebRTC">Clone with WebRTC</button>
+      <button type="button" @click="cloneGithub" title="Uses ye old DNS for discovery and the Github REST API for delivery">Clone from Github</button>
+      <button type="button" @click="cloneWebRTC" title="Uses 'signalhub' for discovery and 'webrtc-swarm' for delivery">Clone with WebRTC</button>
+      <button type="button" @click="cloneWebTorrent" title="Uses 'bittorrent-tracker' for discovery and 'bittorrent-protocol' for delivery">Clone with WebTorrent</button>
       <div>
         Available Threads (branches): {{ branches }}
         <br>
@@ -52,10 +53,11 @@
 import 'babel-polyfill'
 import _ from 'lodash'
 
-import { GitRepo, GitCommit, GithubRemote, WebRTCRemote, GithubFriends, GithubKeyManager, PGP } from './meshdb'
+import { GitRepo, GitCommit, GitLog, GithubRemote, WebRTCRemote, WebTorrentRemote, GithubFriends, GithubKeyManager, PGP } from './meshdb'
 window.PGP=PGP
 window.GitRepo = GitRepo
 window.GitCommit = GitCommit
+window.GitLog = GitLog
 window.WebRTCRemote = WebRTCRemote
 
 import LoginWithGithub from './login-with-github/vue/component.vue'
@@ -112,7 +114,6 @@ export default {
       })
       .then(res => res.json())
       .then(json => {
-        console.log('json =', json)
         this.username = json.login
         this.name = json.name
         this.email = json.email
@@ -157,6 +158,11 @@ export default {
     },
     async cloneWebRTC () {
       await WebRTCRemote.clone({repo: this.repoName})
+      this.branches = await GitRepo.listBranches({repo: this.repoName})
+      this.tags = await GitRepo.listTags({repo: this.repoName})
+    },
+    async cloneWebTorrent () {
+      await WebTorrentRemote.clone({repo: this.repoName})
       this.branches = await GitRepo.listBranches({repo: this.repoName})
       this.tags = await GitRepo.listTags({repo: this.repoName})
     },

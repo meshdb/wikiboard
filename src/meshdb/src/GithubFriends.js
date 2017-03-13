@@ -11,7 +11,6 @@ export class GithubFriends {
     let followers = await GithubFriends.followers({token})
     let following = await GithubFriends.following({token})
     let logins = _.union(followers, following)
-    console.log('logins =', logins)
     let friends = []
     for (let login of logins) {
       let friend = await GithubFriends.fetchUser({token, login})
